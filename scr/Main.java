@@ -95,5 +95,19 @@ public class Main {
 
         service.verHistorial(id).forEach(System.out::println);
     }
+    private static void borrarTicket(Scanner scanner, TicketService service) {
+        System.out.print("ID del ticket a borrar: ");
+        int id = scanner.nextInt();
+        scanner.nextLine();
+
+        boolean borrado = service.borrarTicket(id);
+
+        if (borrado) {
+            System.out.println("Ticket borrado correctamente 🗑️");
+        } else {
+            System.out.println("No existe un ticket con ese ID.");
+        }
+    }
+
 
 }
