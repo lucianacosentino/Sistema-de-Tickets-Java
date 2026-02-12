@@ -47,3 +47,12 @@ public class Ticket {
         return historial;
     }
 }
+
+public Ticket buscarPorId(int id) {
+    for (Ticket t : tickets) {
+        if (t.getId() == id) {
+            return t;
+        }
+    }
+    return null;
+}
