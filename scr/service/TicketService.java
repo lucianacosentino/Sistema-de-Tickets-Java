@@ -21,3 +21,13 @@ public class Ticket {
         this.historial = new ArrayList<>();
         historial.add("Ticket creado en estado ABIERTO");
     }
+
+
+    public int getId() {
+        return id;
+    }
+
+    public EstadoTicket getEstado() {
+        return estado;
+    }
+
