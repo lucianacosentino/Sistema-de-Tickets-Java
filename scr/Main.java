@@ -100,6 +100,14 @@ public class Main {
         int id = scanner.nextInt();
         scanner.nextLine();
 
+        System.out.print("¿Seguro que querés borrar el ticket " + id + "? (S/N): ");
+        String respuesta = scanner.nextLine();
+
+        if (!respuesta.equalsIgnoreCase("S")) {
+            System.out.println("Operación cancelada.");
+            return;
+        }
+
         boolean borrado = service.borrarTicket(id);
 
         if (borrado) {
@@ -108,6 +116,7 @@ public class Main {
             System.out.println("No existe un ticket con ese ID.");
         }
     }
+
 
 
 }
