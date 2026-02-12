@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Ticket {
+    private static int contador = 1;
 
     private int id;
     private String titulo;
@@ -12,15 +13,16 @@ public class Ticket {
     private Prioridad prioridad;
     private List<String> historial;
 
-    public Ticket(int id, String titulo, String descripcion, Prioridad prioridad) {
-        this.id = id;
+    public Ticket(String titulo, String descripcion, Prioridad prioridad) {
+        this.id = contador++;
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.prioridad = prioridad;
         this.estado = EstadoTicket.ABIERTO;
         this.historial = new ArrayList<>();
-        historial.add("Ticket creado en estado ABIERTO");
+        historial.add("Ticket creado");
     }
+
 
     public int getId() {
         return id;
@@ -40,6 +42,10 @@ public class Ticket {
                 " | " + titulo +
                 " | Prioridad: " + prioridad +
                 " | Estado: " + estado;
+    }
+    public void setEstado(EstadoTicket estado) {
+        this.estado = estado;
+        historial.add("Estado cambiado a " + estado);
     }
 
     public List<String> getHistorial() {
