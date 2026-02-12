@@ -1,10 +1,12 @@
 package model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Ticket {
-    private static int contador = 1;
+    private static final AtomicInteger contador = new AtomicInteger(1);
 
     private int id;
     private String titulo;
@@ -12,54 +14,61 @@ public class Ticket {
     private EstadoTicket estado;
     private Prioridad prioridad;
     private List<String> historial;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
 
     public Ticket(String titulo, String descripcion, Prioridad prioridad) {
-        this.id = contador++;
+        this.id = contador.getAndIncrement();
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.prioridad = prioridad;
         this.estado = EstadoTicket.ABIERTO;
         this.historial = new ArrayList<>();
-        historial.add("Ticket creado");
+        this.fechaCreacion = LocalDateTime.now();
+        this.fechaActualizacion = LocalDateTime.now();
+        historial.add("Ticket creado: " + fechaCreacion);
     }
 
+    // --- Getters
+    public int getId() { return id; }
+    public String getTitulo() { return titulo; }
+    public String getDescripcion() { return descripcion; }
+    public Prioridad getPrioridad() { return prioridad; }
+    public EstadoTicket getEstado() { return estado; }
+    public List<String> getHistorial() { return historial; }
+    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
+    public LocalDateTime getFechaActualizacion() { return fechaActualizacion; }
 
-    public int getId() {
-        return id;
+    // --- Setters / Updaters
+    public void setEstado(EstadoTicket estado) {
+        this.estado = estado;
+        this.fechaActualizacion = LocalDateTime.now();
+        historial.add("Estado cambiado a " + estado + " en " + fechaActualizacion);
     }
 
-    public Prioridad getPrioridad() {
-        return prioridad;
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+        this.fechaActualizacion = LocalDateTime.now();
+        historial.add("Título actualizado a '" + titulo + "' en " + fechaActualizacion);
     }
 
-    public EstadoTicket getEstado() {
-        return estado;
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+        this.fechaActualizacion = LocalDateTime.now();
+        historial.add("Descripción actualizada en " + fechaActualizacion);
     }
 
-    public void cambiarEstado(EstadoTicket nuevoEstado) {
-        this.estado = nuevoEstado;
-        historial.add("Estado cambiado a " + nuevoEstado);
-    }
-    public String getTitulo() {
-        return titulo;
+    public void setPrioridad(Prioridad prioridad) {
+        this.prioridad = prioridad;
+        this.fechaActualizacion = LocalDateTime.now();
+        historial.add("Prioridad cambiada a " + prioridad + " en " + fechaActualizacion);
     }
 
-    public String getDescripcion() {
-        return descripcion;
-    }
-
+    @Override
     public String toString() {
         return "Ticket #" + id +
                 " | " + titulo +
                 " | Prioridad: " + prioridad +
                 " | Estado: " + estado;
-    }
-    public void setEstado(EstadoTicket estado) {
-        this.estado = estado;
-        historial.add("Estado cambiado a " + estado);
-    }
-
-    public List<String> getHistorial() {
-        return historial;
     }
 }
