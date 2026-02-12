@@ -36,6 +36,12 @@ public class Ticket {
         historial.add("Estado cambiado a " + nuevoEstado);
     }
 
+    public String toString() {
+        return "Ticket #" + id +
+                " | " + titulo +
+                " | Prioridad: " + prioridad +
+                " | Estado: " + estado;
+    }
 
     public List<String> getHistorial() {
         return historial;
