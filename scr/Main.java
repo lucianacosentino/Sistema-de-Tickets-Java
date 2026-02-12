@@ -3,10 +3,20 @@ import model.EstadoTicket;
 import service.TicketService;
 import ui.MainWindow;
 import java.util.Scanner;
+import javax.swing.UIManager;
+import javax.swing.SwingUtilities;
+
 
 public class Main {
 
     public static void main(String[] args) {
+
+        // Look & Feel moderno
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+        } catch (Exception e) {
+            System.out.println("No se pudo aplicar Nimbus");
+        }
 
         TicketService service = new TicketService();
         Scanner scanner = new Scanner(System.in);
@@ -20,13 +30,16 @@ public class Main {
         scanner.nextLine();
 
         if (opcion == 1) {
-            new MainWindow(service).setVisible(true);
+            SwingUtilities.invokeLater(() ->
+                    new MainWindow(service).setVisible(true)
+            );
         } else {
             ejecutarCLI(scanner, service);
         }
 
         scanner.close();
     }
+
 
     // --------- MODO TERMINAL ----------
     private static void ejecutarCLI(Scanner scanner, TicketService service) {
