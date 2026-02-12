@@ -4,79 +4,54 @@ import model.Ticket;
 import model.EstadoTicket;
 import model.Prioridad;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class TicketService {
 
-    private List<Ticket> tickets = new ArrayList<>();
+    // Use Map for fast lookups
+    private Map<Integer, Ticket> ticketsMap = new HashMap<>();
 
-    public void agregarTicket(Ticket ticket) {
-        tickets.add(ticket);
-    }
+    // --- CRUD Operations
     public void crearTicket(String titulo, String descripcion, Prioridad prioridad) {
         Ticket t = new Ticket(titulo, descripcion, prioridad);
-        tickets.add(t);
-    }
-
-    public List<Ticket> listarTickets() {
-        return tickets;
+        ticketsMap.put(t.getId(), t);
     }
 
     public boolean cambiarEstado(int id, EstadoTicket estado) {
-        Ticket t = buscarPorId(id);
-        if (t == null) {
-            return false;
-        }
+        Ticket t = ticketsMap.get(id);
+        if (t == null) return false;
         t.setEstado(estado);
         return true;
     }
 
-    public List<String> verHistorial(int id) {
-        Ticket t = buscarPorId(id);
-        return t.getHistorial();
-    }
-
-    private Ticket buscarPorId(int id) {
-        for (Ticket t : tickets) {
-            if (t.getId() == id) {
-                return t;
-            }
-        }
-        return null; // return null instead of throwing
+    public boolean borrarTicket(int id) {
+        return ticketsMap.remove(id) != null;
     }
 
     public List<Ticket> obtenerTickets() {
-        return tickets;
+        return new ArrayList<>(ticketsMap.values());
     }
 
-    public boolean borrarTicket(int id) {
-        for (int i = 0; i < tickets.size(); i++) {
-            if (tickets.get(i).getId() == id) {
-                tickets.remove(i);
-                return true;
-            }
-        }
-        return false;
-    }
     public List<Ticket> filtrarPorEstado(EstadoTicket estado) {
-        List<Ticket> resultado = new ArrayList<>();
-        for (Ticket t : tickets) {
-            if (t.getEstado() == estado) {
-                resultado.add(t);
-            }
-        }
-        return resultado;
+        return ticketsMap.values().stream()
+                .filter(t -> t.getEstado() == estado)
+                .collect(Collectors.toList());
     }
 
     public List<Ticket> filtrarPorPrioridad(Prioridad prioridad) {
-        List<Ticket> resultado = new ArrayList<>();
-        for (Ticket t : tickets) {
-            if (t.getPrioridad() == prioridad) {
-                resultado.add(t);
-            }
-        }
-        return resultado;
+        return ticketsMap.values().stream()
+                .filter(t -> t.getPrioridad() == prioridad)
+                .collect(Collectors.toList());
     }
 
+    public List<String> verHistorial(int id) {
+        Ticket t = ticketsMap.get(id);
+        if (t == null) return new ArrayList<>();
+        return t.getHistorial();
+    }
+
+    public Ticket buscarPorId(int id) {
+        return ticketsMap.get(id);
+    }
 }
