@@ -5,6 +5,7 @@ Proyecto simple en Java que implementa un **sistema de gestión de tickets** con
 ## 📁 Estructura del proyecto
 
 ├── Main.java
+
 ├── model/
 │ ├── Ticket.java
 │ └── EstadoTicket.java
