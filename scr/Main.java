@@ -37,6 +37,10 @@ public class Main {
                 case 4:
                     verHistorial(scanner, service);
                     break;
+                case 5:
+                    borrarTicket(scanner, service);
+                    break;
+
                 case 0:
                     System.out.println("Saliendo del sistema...");
                     break;
