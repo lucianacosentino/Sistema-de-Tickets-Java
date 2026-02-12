@@ -28,6 +28,10 @@ public class Ticket {
         return id;
     }
 
+    public Prioridad getPrioridad() {
+        return prioridad;
+    }
+
     public EstadoTicket getEstado() {
         return estado;
     }

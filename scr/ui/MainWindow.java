@@ -3,6 +3,7 @@ package ui;
 import service.TicketService;
 import model.Ticket;
 import model.Prioridad;
+import model.EstadoTicket;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,6 +47,14 @@ public class MainWindow extends JFrame {
         btnCrear.addActionListener(e -> crearTicket());
         btnListar.addActionListener(e -> listarTickets());
         btnBorrar.addActionListener(e -> borrarTicket());
+        JButton btnFiltrarEstado = new JButton("Filtrar por estado");
+        JButton btnFiltrarPrioridad = new JButton("Filtrar por prioridad");
+
+        botones.add(btnFiltrarEstado);
+        botones.add(btnFiltrarPrioridad);
+        btnFiltrarEstado.addActionListener(e -> filtrarPorEstado());
+        btnFiltrarPrioridad.addActionListener(e -> filtrarPorPrioridad());
+
     }
 
     private void crearTicket() {
@@ -75,6 +84,50 @@ public class MainWindow extends JFrame {
 
         JOptionPane.showMessageDialog(this, "Ticket creado ✅");
         listarTickets();
+    }
+    private void filtrarPorEstado() {
+        String[] opciones = {"ABIERTO", "EN_PROGRESO", "CERRADO"};
+
+        String estadoStr = (String) JOptionPane.showInputDialog(
+                this,
+                "Seleccioná el estado:",
+                "Filtrar por estado",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                opciones,
+                opciones[0]
+        );
+
+        if (estadoStr == null) return;
+
+        EstadoTicket estado = EstadoTicket.valueOf(estadoStr);
+
+        areaTickets.setText("");
+        for (Ticket t : service.filtrarPorEstado(estado)) {
+            areaTickets.append(t.toString() + "\n");
+        }
+    }
+    private void filtrarPorPrioridad() {
+        String[] opciones = {"BAJA", "MEDIA", "ALTA"};
+
+        String prioridadStr = (String) JOptionPane.showInputDialog(
+                this,
+                "Seleccioná la prioridad:",
+                "Filtrar por prioridad",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                opciones,
+                opciones[1]
+        );
+
+        if (prioridadStr == null) return;
+
+        Prioridad prioridad = Prioridad.valueOf(prioridadStr);
+
+        areaTickets.setText("");
+        for (Ticket t : service.filtrarPorPrioridad(prioridad)) {
+            areaTickets.append(t.toString() + "\n");
+        }
     }
 
 
