@@ -56,3 +56,11 @@ public Ticket buscarPorId(int id) {
     }
     return null;
 }
+
+public void cambiarEstado(int id, EstadoTicket nuevoEstado) {
+    Ticket ticket = buscarPorId(id);
+    if (ticket != null) {
+        ticket.cambiarEstado(nuevoEstado);
+    }
+}
+}
