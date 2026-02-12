@@ -35,3 +35,9 @@ public class Ticket {
         this.estado = nuevoEstado;
         historial.add("Estado cambiado a " + nuevoEstado);
     }
+
+
+    public List<String> getHistorial() {
+        return historial;
+    }
+}
