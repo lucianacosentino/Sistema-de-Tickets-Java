@@ -17,6 +17,7 @@ public class Main {
             System.out.println("2. Listar tickets");
             System.out.println("3. Cambiar estado de un ticket");
             System.out.println("4. Ver historial de un ticket");
+            System.out.println("5. Borrar ticket");
             System.out.println("0. Salir");
             System.out.print("Seleccione una opción: ");
 
