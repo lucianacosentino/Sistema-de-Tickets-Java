@@ -41,6 +41,10 @@ public class TicketService {
         }
         throw new RuntimeException("Ticket no encontrado");
     }
+    public List<Ticket> obtenerTickets() {
+        return tickets;
+    }
+
     public boolean borrarTicket(int id) {
         for (int i = 0; i < tickets.size(); i++) {
             if (tickets.get(i).getId() == id) {

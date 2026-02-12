@@ -1,6 +1,7 @@
-import model.*;
+import model.Prioridad;
+import model.EstadoTicket;
 import service.TicketService;
-
+import ui.MainWindow;
 import java.util.Scanner;
 
 public class Main {
@@ -9,50 +10,52 @@ public class Main {
 
         TicketService service = new TicketService();
         Scanner scanner = new Scanner(System.in);
+
+        System.out.println("¿Cómo querés ejecutar el sistema?");
+        System.out.println("1 - Interfaz gráfica");
+        System.out.println("2 - Terminal");
+        System.out.print("Opción: ");
+
+        int opcion = scanner.nextInt();
+        scanner.nextLine();
+
+        if (opcion == 1) {
+            new MainWindow(service).setVisible(true);
+        } else {
+            ejecutarCLI(scanner, service);
+        }
+
+        scanner.close();
+    }
+
+    // --------- MODO TERMINAL ----------
+    private static void ejecutarCLI(Scanner scanner, TicketService service) {
         int opcion;
 
         do {
             System.out.println("\n===== SISTEMA DE TICKETS =====");
             System.out.println("1. Crear ticket");
             System.out.println("2. Listar tickets");
-            System.out.println("3. Cambiar estado de un ticket");
-            System.out.println("4. Ver historial de un ticket");
+            System.out.println("3. Cambiar estado");
+            System.out.println("4. Ver historial");
             System.out.println("5. Borrar ticket");
             System.out.println("0. Salir");
-            System.out.print("Seleccione una opción: ");
 
             opcion = scanner.nextInt();
-            scanner.nextLine(); // limpiar buffer
+            scanner.nextLine();
 
             switch (opcion) {
-                case 1:
-                    crearTicket(scanner, service);
-                    break;
-                case 2:
-                    listarTickets(service);
-                    break;
-                case 3:
-                    cambiarEstado(scanner, service);
-                    break;
-                case 4:
-                    verHistorial(scanner, service);
-                    break;
-                case 5:
-                    borrarTicket(scanner, service);
-                    break;
-
-                case 0:
-                    System.out.println("Saliendo del sistema...");
-                    break;
-                default:
-                    System.out.println("Opción inválida.");
+                case 1 -> crearTicket(scanner, service);
+                case 2 -> listarTickets(service);
+                case 3 -> cambiarEstado(scanner, service);
+                case 4 -> verHistorial(scanner, service);
+                case 5 -> borrarTicket(scanner, service);
             }
 
         } while (opcion != 0);
-
-        scanner.close();
     }
 
+    // --------- MÉTODOS AUXILIARES ----------
     private static void crearTicket(Scanner scanner, TicketService service) {
         System.out.print("Título: ");
         String titulo = scanner.nextLine();
@@ -66,6 +69,7 @@ public class Main {
         service.crearTicket(titulo, descripcion, prioridad);
         System.out.println("Ticket creado correctamente.");
     }
+
     private static void listarTickets(TicketService service) {
         service.listarTickets().forEach(System.out::println);
     }
@@ -76,17 +80,11 @@ public class Main {
         scanner.nextLine();
 
         System.out.print("Nuevo estado (ABIERTO / EN_PROGRESO / CERRADO): ");
-        String estadoStr = scanner.nextLine().toUpperCase();
+        EstadoTicket estado = EstadoTicket.valueOf(scanner.nextLine().toUpperCase());
 
-        try {
-            EstadoTicket estado = EstadoTicket.valueOf(estadoStr);
-            service.cambiarEstado(id, estado);
-            System.out.println("Estado actualizado correctamente.");
-        } catch (IllegalArgumentException e) {
-            System.out.println("Estado inválido.");
-        }
+        service.cambiarEstado(id, estado);
+        System.out.println("Estado actualizado.");
     }
-
 
     private static void verHistorial(Scanner scanner, TicketService service) {
         System.out.print("ID del ticket: ");
@@ -95,28 +93,16 @@ public class Main {
 
         service.verHistorial(id).forEach(System.out::println);
     }
+
     private static void borrarTicket(Scanner scanner, TicketService service) {
-        System.out.print("ID del ticket a borrar: ");
+        System.out.print("ID del ticket: ");
         int id = scanner.nextInt();
         scanner.nextLine();
 
-        System.out.print("¿Seguro que querés borrar el ticket " + id + "? (S/N): ");
-        String respuesta = scanner.nextLine();
-
-        if (!respuesta.equalsIgnoreCase("S")) {
-            System.out.println("Operación cancelada.");
-            return;
-        }
-
-        boolean borrado = service.borrarTicket(id);
-
-        if (borrado) {
-            System.out.println("Ticket borrado correctamente 🗑️");
+        if (service.borrarTicket(id)) {
+            System.out.println("Ticket borrado 🗑️");
         } else {
-            System.out.println("No existe un ticket con ese ID.");
+            System.out.println("No existe ese ticket.");
         }
     }
-
-
-
 }
