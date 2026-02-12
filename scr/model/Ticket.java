@@ -31,3 +31,7 @@ public class Ticket {
         return estado;
     }
 
+    public void cambiarEstado(EstadoTicket nuevoEstado) {
+        this.estado = nuevoEstado;
+        historial.add("Estado cambiado a " + nuevoEstado);
+    }
