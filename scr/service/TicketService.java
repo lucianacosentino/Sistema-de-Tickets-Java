@@ -21,3 +21,7 @@ public class TicketService {
         Ticket ticket = new Ticket(contadorId++, titulo, descripcion, prioridad);
         tickets.add(ticket);
     }
+
+    public List<Ticket> listarTickets() {
+        return tickets;
+    }
