@@ -54,5 +54,24 @@ public class TicketService {
         }
         return false;
     }
+    public List<Ticket> filtrarPorEstado(EstadoTicket estado) {
+        List<Ticket> resultado = new ArrayList<>();
+        for (Ticket t : tickets) {
+            if (t.getEstado() == estado) {
+                resultado.add(t);
+            }
+        }
+        return resultado;
+    }
+
+    public List<Ticket> filtrarPorPrioridad(Prioridad prioridad) {
+        List<Ticket> resultado = new ArrayList<>();
+        for (Ticket t : tickets) {
+            if (t.getPrioridad() == prioridad) {
+                resultado.add(t);
+            }
+        }
+        return resultado;
+    }
 
 }
