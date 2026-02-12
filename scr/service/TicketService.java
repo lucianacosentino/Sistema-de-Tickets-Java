@@ -23,9 +23,13 @@ public class TicketService {
         return tickets;
     }
 
-    public void cambiarEstado(int id, EstadoTicket estado) {
+    public boolean cambiarEstado(int id, EstadoTicket estado) {
         Ticket t = buscarPorId(id);
+        if (t == null) {
+            return false;
+        }
         t.setEstado(estado);
+        return true;
     }
 
     public List<String> verHistorial(int id) {

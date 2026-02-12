@@ -55,6 +55,50 @@ public class MainWindow extends JFrame {
         btnFiltrarEstado.addActionListener(e -> filtrarPorEstado());
         btnFiltrarPrioridad.addActionListener(e -> filtrarPorPrioridad());
 
+        JButton btnCambiarEstado = new JButton("Cambiar estado");
+        botones.add(btnCambiarEstado);
+
+        btnCambiarEstado.addActionListener(e -> cambiarEstado());
+
+
+    }
+    private void cambiarEstado() {
+        String input = JOptionPane.showInputDialog(this, "ID del ticket:");
+
+        if (input == null) return;
+
+        int id;
+        try {
+            id = Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "ID inválido");
+            return;
+        }
+
+        String[] opciones = {"ABIERTO", "EN_PROGRESO", "CERRADO"};
+
+        String estadoStr = (String) JOptionPane.showInputDialog(
+                this,
+                "Nuevo estado:",
+                "Cambiar estado",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                opciones,
+                opciones[0]
+        );
+
+        if (estadoStr == null) return;
+
+        EstadoTicket estado = EstadoTicket.valueOf(estadoStr);
+
+        boolean cambiado = service.cambiarEstado(id, estado);
+
+        if (cambiado) {
+            JOptionPane.showMessageDialog(this, "Estado actualizado ✅");
+            listarTickets();
+        } else {
+            JOptionPane.showMessageDialog(this, "No existe un ticket con ese ID");
+        }
     }
 
     private void crearTicket() {
