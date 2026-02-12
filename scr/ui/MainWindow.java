@@ -2,138 +2,178 @@ package ui;
 
 import service.TicketService;
 import model.Ticket;
-import model.Prioridad;
 import model.EstadoTicket;
+import model.Prioridad;
 
 import javax.swing.*;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MainWindow extends JFrame {
 
     private TicketService service;
-    private JTextPane areaTickets;
+    private JTable tableTickets;
+    private DefaultTableModel tableModel;
+    private JTextField searchField;
+    private JComboBox<EstadoTicket> filterEstado;
+    private JComboBox<Prioridad> filterPrioridad;
 
     public MainWindow(TicketService service) {
         this.service = service;
 
         setTitle("Sistema de Tickets");
-        setSize(550, 450);
+        setSize(800, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         crearComponentes();
-    }
-
-    // Helper: Add a ticket with color coding for estado and style for prioridad
-    private void agregarTicketColor(Ticket t) {
-        StyledDocument doc = areaTickets.getStyledDocument();
-        Style style = areaTickets.addStyle("ticketStyle", null);
-
-        // Color by estado
-        switch (t.getEstado()) {
-            case ABIERTO -> StyleConstants.setForeground(style, new Color(0, 153, 0)); // verde
-            case EN_PROGRESO -> StyleConstants.setForeground(style, Color.ORANGE);
-            case CERRADO -> StyleConstants.setForeground(style, Color.RED);
-        }
-
-        // Style by prioridad
-        switch (t.getPrioridad()) {
-            case ALTA -> StyleConstants.setBold(style, true);
-            case MEDIA -> StyleConstants.setItalic(style, true);
-            default -> StyleConstants.setBold(style, false);
-        }
-
-        try {
-            doc.insertString(doc.getLength(), t.toString() + "\n", style);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Helper: Display list of tickets
-    private void mostrarTicketsConColor(List<Ticket> tickets) {
-        areaTickets.setText("");
-        for (Ticket t : tickets) {
-            agregarTicketColor(t);
-        }
+        listarTickets();
     }
 
     private void crearComponentes() {
-        JPanel panel = new JPanel(new BorderLayout());
+        JPanel mainPanel = new JPanel(new BorderLayout());
 
-        areaTickets = new JTextPane();
-        areaTickets.setEditable(false);
+        // --- Top panel: search + filters
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-        // Panel de botones vertical
+        searchField = new JTextField(20);
+        searchField.setToolTipText("Buscar por título o descripción");
+        searchField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                aplicarFiltros();
+            }
+        });
+
+        filterEstado = new JComboBox<>();
+        filterEstado.addItem(null); // show all
+        for (EstadoTicket estado : EstadoTicket.values()) filterEstado.addItem(estado);
+        filterEstado.addActionListener(e -> aplicarFiltros());
+
+        filterPrioridad = new JComboBox<>();
+        filterPrioridad.addItem(null); // show all
+        for (Prioridad p : Prioridad.values()) filterPrioridad.addItem(p);
+        filterPrioridad.addActionListener(e -> aplicarFiltros());
+
+        topPanel.add(new JLabel("Buscar:"));
+        topPanel.add(searchField);
+        topPanel.add(new JLabel("Estado:"));
+        topPanel.add(filterEstado);
+        topPanel.add(new JLabel("Prioridad:"));
+        topPanel.add(filterPrioridad);
+
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+
+        // --- Table
+        String[] columnNames = {"ID", "Título", "Prioridad", "Estado"};
+        tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // prevent editing directly
+            }
+        };
+        tableTickets = new JTable(tableModel);
+        tableTickets.setFillsViewportHeight(true);
+        tableTickets.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // Renderer for colors & styles
+        tableTickets.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                                                           boolean isSelected, boolean hasFocus,
+                                                           int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                EstadoTicket estado = (EstadoTicket) table.getValueAt(row, 3);
+                Prioridad prioridad = (Prioridad) table.getValueAt(row, 2);
+
+                if (estado == EstadoTicket.ABIERTO) c.setForeground(new Color(0, 153, 0));
+                else if (estado == EstadoTicket.EN_PROGRESO) c.setForeground(Color.ORANGE);
+                else if (estado == EstadoTicket.CERRADO) c.setForeground(Color.RED);
+
+                Font font = c.getFont();
+                if (prioridad == Prioridad.ALTA) c.setFont(font.deriveFont(Font.BOLD));
+                else if (prioridad == Prioridad.MEDIA) c.setFont(font.deriveFont(Font.ITALIC));
+                else c.setFont(font.deriveFont(Font.PLAIN));
+
+                if (isSelected) c.setBackground(new Color(220, 220, 255));
+                else c.setBackground(Color.WHITE);
+
+                return c;
+            }
+        });
+
+        JScrollPane scrollPane = new JScrollPane(tableTickets);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // --- Buttons panel
         JPanel botones = new JPanel();
-        botones.setLayout(new BoxLayout(botones, BoxLayout.Y_AXIS));
-        botones.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        botones.setLayout(new FlowLayout(FlowLayout.LEFT));
 
         JButton btnCrear = new JButton("Crear Ticket");
-        JButton btnListar = new JButton("Listar Tickets");
         JButton btnBorrar = new JButton("Borrar Ticket");
-        JButton btnFiltrarEstado = new JButton("Filtrar por estado");
-        JButton btnFiltrarPrioridad = new JButton("Filtrar por prioridad");
-        JButton btnCambiarEstado = new JButton("Cambiar estado");
-        JButton btnMostrarTodos = new JButton("Mostrar todos");
+        JButton btnCambiarEstado = new JButton("Cambiar Estado");
+        JButton btnMostrarTodos = new JButton("Mostrar Todos");
 
-        // Add spacing and buttons vertically
-        for (JButton b : new JButton[]{btnCrear, btnListar, btnBorrar, btnFiltrarEstado, btnFiltrarPrioridad, btnCambiarEstado, btnMostrarTodos}) {
-            b.setAlignmentX(Component.CENTER_ALIGNMENT);
-            botones.add(b);
-            botones.add(Box.createRigidArea(new Dimension(0, 5)));
-        }
+        botones.add(btnCrear);
+        botones.add(btnBorrar);
+        botones.add(btnCambiarEstado);
+        botones.add(btnMostrarTodos);
 
-        panel.add(new JScrollPane(areaTickets), BorderLayout.CENTER);
-        panel.add(botones, BorderLayout.EAST); // buttons on right side
+        mainPanel.add(botones, BorderLayout.SOUTH);
 
-        add(panel);
+        add(mainPanel);
 
-        // Button actions
+        // --- Button actions
         btnCrear.addActionListener(e -> crearTicket());
-        btnListar.addActionListener(e -> listarTickets());
         btnBorrar.addActionListener(e -> borrarTicket());
-        btnFiltrarEstado.addActionListener(e -> filtrarPorEstado());
-        btnFiltrarPrioridad.addActionListener(e -> filtrarPorPrioridad());
         btnCambiarEstado.addActionListener(e -> cambiarEstado());
-        btnMostrarTodos.addActionListener(e -> listarTickets()); // reset filters
+        btnMostrarTodos.addActionListener(e -> resetFiltros());
+
+        // --- Double-click to change status
+        tableTickets.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    cambiarEstado();
+                }
+            }
+        });
     }
 
-    private void cambiarEstado() {
-        String input = JOptionPane.showInputDialog(this, "ID del ticket:");
-        if (input == null) return;
-
-        int id;
-        try {
-            id = Integer.parseInt(input.trim());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "ID inválido");
-            return;
+    // --- Methods
+    private void listarTickets() {
+        tableModel.setRowCount(0);
+        for (Ticket t : service.obtenerTickets()) {
+            tableModel.addRow(new Object[]{t.getId(), t.getTitulo(), t.getPrioridad(), t.getEstado()});
         }
+    }
 
-        String[] opciones = {"ABIERTO", "EN_PROGRESO", "CERRADO"};
+    private void aplicarFiltros() {
+        String texto = searchField.getText().trim().toLowerCase();
+        EstadoTicket estadoFiltro = (EstadoTicket) filterEstado.getSelectedItem();
+        Prioridad prioridadFiltro = (Prioridad) filterPrioridad.getSelectedItem();
 
-        String estadoStr = (String) JOptionPane.showInputDialog(
-                this,
-                "Nuevo estado:",
-                "Cambiar estado",
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                opciones,
-                opciones[0]
-        );
+        List<Ticket> ticketsFiltrados = service.obtenerTickets().stream()
+                .filter(t -> (texto.isEmpty() || t.getTitulo().toLowerCase().contains(texto)
+                        || t.getDescripcion().toLowerCase().contains(texto)))
+                .filter(t -> (estadoFiltro == null || t.getEstado() == estadoFiltro))
+                .filter(t -> (prioridadFiltro == null || t.getPrioridad() == prioridadFiltro))
+                .collect(Collectors.toList());
 
-        if (estadoStr == null) return;
+        tableModel.setRowCount(0);
+        for (Ticket t : ticketsFiltrados) {
+            tableModel.addRow(new Object[]{t.getId(), t.getTitulo(), t.getPrioridad(), t.getEstado()});
+        }
+    }
 
-        EstadoTicket estado = EstadoTicket.valueOf(estadoStr);
-
-        boolean cambiado = service.cambiarEstado(id, estado);
-
-        JOptionPane.showMessageDialog(this, cambiado ? "Estado actualizado ✅" : "No existe un ticket con ese ID");
+    private void resetFiltros() {
+        searchField.setText("");
+        filterEstado.setSelectedItem(null);
+        filterPrioridad.setSelectedItem(null);
         listarTickets();
     }
 
@@ -144,76 +184,51 @@ public class MainWindow extends JFrame {
         String descripcion = JOptionPane.showInputDialog(this, "Descripción del ticket:");
         if (descripcion == null || descripcion.isEmpty()) return;
 
-        String[] opciones = {"BAJA", "MEDIA", "ALTA"};
-        String prioridadStr = (String) JOptionPane.showInputDialog(
-                this,
-                "Seleccioná la prioridad:",
-                "Prioridad",
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                opciones,
-                opciones[1]
-        );
+        Prioridad prioridad = (Prioridad) JOptionPane.showInputDialog(this,
+                "Seleccioná la prioridad:", "Prioridad",
+                JOptionPane.QUESTION_MESSAGE, null, Prioridad.values(), Prioridad.MEDIA);
 
-        if (prioridadStr == null) return;
+        if (prioridad == null) return;
 
-        Prioridad prioridad = Prioridad.valueOf(prioridadStr);
         service.crearTicket(titulo, descripcion, prioridad);
-
-        JOptionPane.showMessageDialog(this, "Ticket creado ✅");
         listarTickets();
     }
 
-    private void filtrarPorEstado() {
-        String[] opciones = {"ABIERTO", "EN_PROGRESO", "CERRADO"};
-        String estadoStr = (String) JOptionPane.showInputDialog(
-                this,
-                "Seleccioná el estado:",
-                "Filtrar por estado",
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                opciones,
-                opciones[0]
-        );
-        if (estadoStr == null) return;
-
-        EstadoTicket estado = EstadoTicket.valueOf(estadoStr);
-        mostrarTicketsConColor(service.filtrarPorEstado(estado));
-    }
-
-    private void filtrarPorPrioridad() {
-        String[] opciones = {"BAJA", "MEDIA", "ALTA"};
-        String prioridadStr = (String) JOptionPane.showInputDialog(
-                this,
-                "Seleccioná la prioridad:",
-                "Filtrar por prioridad",
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                opciones,
-                opciones[1]
-        );
-        if (prioridadStr == null) return;
-
-        Prioridad prioridad = Prioridad.valueOf(prioridadStr);
-        mostrarTicketsConColor(service.filtrarPorPrioridad(prioridad));
-    }
-
-    private void listarTickets() {
-        mostrarTicketsConColor(service.obtenerTickets());
-    }
-
     private void borrarTicket() {
-        String input = JOptionPane.showInputDialog(this, "ID del ticket a borrar:");
-        if (input == null) return;
+        int fila = tableTickets.getSelectedRow();
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Seleccioná un ticket primero");
+            return;
+        }
 
-        try {
-            int id = Integer.parseInt(input.trim());
-            boolean borrado = service.borrarTicket(id);
+        int id = (int) tableTickets.getValueAt(fila, 0);
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "¿Seguro que quieres borrar el ticket #" + id + "?", "Confirmar borrado",
+                JOptionPane.YES_NO_OPTION);
 
-            JOptionPane.showMessageDialog(this, borrado ? "Ticket borrado 🗑️" : "No existe ese ticket");
+        if (confirm == JOptionPane.YES_OPTION) {
+            service.borrarTicket(id);
             listarTickets();
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "ID inválido");
+        }
+    }
+
+    private void cambiarEstado() {
+        int fila = tableTickets.getSelectedRow();
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Seleccioná un ticket primero");
+            return;
+        }
+
+        int id = (int) tableTickets.getValueAt(fila, 0);
+
+        EstadoTicket nuevoEstado = (EstadoTicket) JOptionPane.showInputDialog(this,
+                "Seleccioná el nuevo estado:", "Cambiar Estado",
+                JOptionPane.QUESTION_MESSAGE, null, EstadoTicket.values(),
+                tableTickets.getValueAt(fila, 3));
+
+        if (nuevoEstado != null) {
+            service.cambiarEstado(id, nuevoEstado);
+            listarTickets();
         }
     }
 }

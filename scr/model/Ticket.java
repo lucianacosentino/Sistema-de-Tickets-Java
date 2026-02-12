@@ -40,6 +40,13 @@ public class Ticket {
         this.estado = nuevoEstado;
         historial.add("Estado cambiado a " + nuevoEstado);
     }
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
 
     public String toString() {
         return "Ticket #" + id +
