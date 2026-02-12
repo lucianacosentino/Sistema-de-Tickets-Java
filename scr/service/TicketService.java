@@ -42,3 +42,8 @@ public class TicketService {
         }
     }
 }
+
+public List<String> verHistorial(int id) {
+    Ticket ticket = buscarPorId(id);
+    return ticket.getHistorial();
+}
