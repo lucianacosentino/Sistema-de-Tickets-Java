@@ -43,8 +43,9 @@ public class TicketService {
                 return t;
             }
         }
-        throw new RuntimeException("Ticket no encontrado");
+        return null; // return null instead of throwing
     }
+
     public List<Ticket> obtenerTickets() {
         return tickets;
     }
