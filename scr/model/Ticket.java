@@ -22,7 +22,6 @@ public class Ticket {
         historial.add("Ticket creado en estado ABIERTO");
     }
 
-
     public int getId() {
         return id;
     }
@@ -46,21 +45,4 @@ public class Ticket {
     public List<String> getHistorial() {
         return historial;
     }
-}
-
-public Ticket buscarPorId(int id) {
-    for (Ticket t : tickets) {
-        if (t.getId() == id) {
-            return t;
-        }
-    }
-    return null;
-}
-
-public void cambiarEstado(int id, EstadoTicket nuevoEstado) {
-    Ticket ticket = buscarPorId(id);
-    if (ticket != null) {
-        ticket.cambiarEstado(nuevoEstado);
-    }
-}
 }
