@@ -16,3 +16,8 @@ public class TicketService {
         tickets = new ArrayList<>();
         contadorId = 1;
     }
+
+    public void crearTicket(String titulo, String descripcion, Prioridad prioridad) {
+        Ticket ticket = new Ticket(contadorId++, titulo, descripcion, prioridad);
+        tickets.add(ticket);
+    }
