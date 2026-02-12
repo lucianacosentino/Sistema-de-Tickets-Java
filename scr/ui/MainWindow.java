@@ -8,10 +8,16 @@ import model.EstadoTicket;
 import javax.swing.*;
 import java.awt.*;
 
+
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+
 public class MainWindow extends JFrame {
 
     private TicketService service;
-    private JTextArea areaTickets;
+    private JTextPane areaTickets;
+
 
     public MainWindow(TicketService service) {
         this.service = service;
@@ -23,11 +29,34 @@ public class MainWindow extends JFrame {
 
         crearComponentes();
     }
+    private void agregarTicketColor(Ticket t) {
+        StyledDocument doc = areaTickets.getStyledDocument();
+        Style style = areaTickets.addStyle("ticketStyle", null);
+
+        switch (t.getEstado()) {
+            case ABIERTO:
+                StyleConstants.setForeground(style, new Color(0, 153, 0)); // verde
+                break;
+            case EN_PROGRESO:
+                StyleConstants.setForeground(style, Color.ORANGE);
+                break;
+            case CERRADO:
+                StyleConstants.setForeground(style, Color.RED);
+                break;
+        }
+
+        try {
+            doc.insertString(doc.getLength(), t.toString() + "\n", style);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private void crearComponentes() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        areaTickets = new JTextArea();
+
+        areaTickets = new JTextPane();
         areaTickets.setEditable(false);
 
         JButton btnCrear = new JButton("Crear Ticket");
@@ -148,7 +177,10 @@ public class MainWindow extends JFrame {
 
         areaTickets.setText("");
         for (Ticket t : service.filtrarPorEstado(estado)) {
-            areaTickets.append(t.toString() + "\n");
+
+                agregarTicketColor(t);
+
+
         }
     }
     private void filtrarPorPrioridad() {
@@ -170,7 +202,7 @@ public class MainWindow extends JFrame {
 
         areaTickets.setText("");
         for (Ticket t : service.filtrarPorPrioridad(prioridad)) {
-            areaTickets.append(t.toString() + "\n");
+            agregarTicketColor(t);
         }
     }
 
@@ -178,9 +210,10 @@ public class MainWindow extends JFrame {
     private void listarTickets() {
         areaTickets.setText("");
         for (Ticket t : service.obtenerTickets()) {
-            areaTickets.append(t.toString() + "\n");
+            agregarTicketColor(t);
         }
     }
+
 
     private void borrarTicket() {
         String input = JOptionPane.showInputDialog(this, "ID del ticket a borrar:");

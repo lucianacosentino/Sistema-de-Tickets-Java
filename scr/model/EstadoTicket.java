@@ -2,6 +2,6 @@ package model;
 
 public enum EstadoTicket {
     ABIERTO,
-    EN_PROCESO,
+    EN_PROGRESO,
     CERRADO
 }
