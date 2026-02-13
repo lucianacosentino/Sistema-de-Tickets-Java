@@ -138,10 +138,11 @@ public class MainWindow extends JFrame {
         tableTickets.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    cambiarEstado();
+                    verDetallesTicket();
                 }
             }
         });
+
     }
 
     // --- Methods
@@ -210,6 +211,46 @@ public class MainWindow extends JFrame {
             service.borrarTicket(id);
             listarTickets();
         }
+    }
+    private void verDetallesTicket() {
+        int fila = tableTickets.getSelectedRow();
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Seleccioná un ticket primero");
+            return;
+        }
+
+        int id = (int) tableTickets.getValueAt(fila, 0);
+        Ticket t = service.buscarPorId(id);
+
+        if (t == null) {
+            JOptionPane.showMessageDialog(this, "Ticket no encontrado");
+            return;
+        }
+
+        StringBuilder detalles = new StringBuilder();
+        detalles.append("ID: ").append(t.getId()).append("\n");
+        detalles.append("Título: ").append(t.getTitulo()).append("\n");
+        detalles.append("Prioridad: ").append(t.getPrioridad()).append("\n");
+        detalles.append("Estado: ").append(t.getEstado()).append("\n");
+        detalles.append("Fecha creación: ").append(t.getFechaCreacion()).append("\n");
+        detalles.append("Última actualización: ").append(t.getFechaActualizacion()).append("\n\n");
+        detalles.append("Descripción:\n");
+        detalles.append(t.getDescripcion()).append("\n\n");
+        detalles.append("Historial:\n");
+
+        for (String evento : t.getHistorial()) {
+            detalles.append("- ").append(evento).append("\n");
+        }
+
+        JTextArea textArea = new JTextArea(detalles.toString());
+        textArea.setEditable(false);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+
+        JScrollPane scroll = new JScrollPane(textArea);
+        scroll.setPreferredSize(new Dimension(500, 400));
+
+        JOptionPane.showMessageDialog(this, scroll, "Detalles del Ticket", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void cambiarEstado() {
